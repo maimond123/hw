@@ -1,0 +1,20 @@
+---
+title: "Lab 02: Linear regression"
+author: "David Maimon"
+format: pdf
+date: "9/11/25"
+---
+
+```{r}
+install.packages("lterdatasampler")
+library(lterdatasampler)
+icecover <- ntl_icecover 
+airtemp <- ntl_airtemp
+```
+
+\
+#Ec
+
+```{r}
+
+```
