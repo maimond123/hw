@@ -6,15 +6,69 @@ date: "9/11/25"
 ---
 
 ```{r}
+#Set Up 
 install.packages("lterdatasampler")
 library(lterdatasampler)
 icecover <- ntl_icecover 
 airtemp <- ntl_airtemp
+
+library(tidyverse)
+
+glimpse(icecover)
+glimpse(airtemp)
+```
+
+## Exercise 6
+
+```{r}
+##Part a
+ggplot(icecover, aes(year, ice_duration, color = lakeid)) +
+  geom_line() +
+  geom_point(size = 0.8) +
+  labs(x = "Year", y = "Ice duration (days)", color = "Lake",
+       title = "Ice duration over time by lake")
+
+
+```
+
+```{r}
+icecover_avg <- icecover |>
+  group_by(year) |>
+  summarise(ice_duration_avg = mean(ice_duration, na.rm = TRUE)) |>
+  ungroup()
+
+ggplot(icecover_avg, aes(year, ice_duration_avg)) +
+  geom_line() +
+  geom_point(size = 0.8) +
+  labs(x = "Year", y = "Average ice duration (days)",
+       title = "Average ice duration across the two lakes")
+
+```
+
+Averaging reduces lake-specific noise and gives a single series per year. It can hide differences between lakes. If both lakes have similar trends, then the average will be a good summary, but otherwise, the average will hide a lot of lake-specific variation. Using the average is simpler, but if the lakes differ significantly, then averaging will hide meaningful patterns.
+
+## Exercise 7
+
+```{r}
+icecover_avg <- icecover |>
+  group_by(year) |>
+  summarise(ice_duration_avg = mean(ice_duration, na.rm = TRUE)) |>
+  ungroup()
+
+analysis_df <- icecover_avg |>
+  inner_join(airtemp, by = "year") |>
+  select(year, ice_duration_avg, ave_air_temp_adjusted)
+nrow(analysis_df)
+
 ```
 
 \
-#Ec
+\
 
-```{r}
+## Exercise 9
 
-```
+## 
+
+## Exercise 10
+
+##   
