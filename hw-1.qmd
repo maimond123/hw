@@ -13,9 +13,11 @@ icecover <- ntl_icecover
 airtemp <- ntl_airtemp
 
 library(tidyverse)
+library(ggplot2)
+
 
 glimpse(icecover)
-glimpse(airtemp)
+
 ```
 
 ## Exercise 6
@@ -31,44 +33,105 @@ ggplot(icecover, aes(year, ice_duration, color = lakeid)) +
 
 ```
 
-```{r}
-icecover_avg <- icecover |>
-  group_by(year) |>
-  summarise(ice_duration_avg = mean(ice_duration, na.rm = TRUE)) |>
-  ungroup()
-
-ggplot(icecover_avg, aes(year, ice_duration_avg)) +
-  geom_line() +
-  geom_point(size = 0.8) +
-  labs(x = "Year", y = "Average ice duration (days)",
-       title = "Average ice duration across the two lakes")
-
-```
-
-Averaging reduces lake-specific noise and gives a single series per year. It can hide differences between lakes. If both lakes have similar trends, then the average will be a good summary, but otherwise, the average will hide a lot of lake-specific variation. Using the average is simpler, but if the lakes differ significantly, then averaging will hide meaningful patterns.
+b\. Averaging reduces lake-specific noise and gives a single series per year. It can hide differences between lakes. If both lakes have similar trends, then the average will be a good summary, but otherwise, the average will hide a lot of lake-specific variation. Using the average is simpler, but if the lakes differ significantly, then averaging will hide meaningful patterns.
 
 ## Exercise 7
 
 ```{r}
+#a 
+
+nrow(airtemp)
+airtemp |> count(year) |> arrange(desc(n)) |> head()
+# Average the ice duration for both lakes 
 icecover_avg <- icecover |>
   group_by(year) |>
-  summarise(ice_duration_avg = mean(ice_duration, na.rm = TRUE)) |>
+  summarise(avg_ice_duration = mean(ice_duration)) |>
   ungroup()
+  
+data_new <- left_join(icecover_avg, airtemp, by = "year") 
 
-analysis_df <- icecover_avg |>
-  inner_join(airtemp, by = "year") |>
-  select(year, ice_duration_avg, ave_air_temp_adjusted)
-nrow(analysis_df)
+dim(data_new)
+```
+
+"
+
+\
+
+\
+
+```{r}
+#b
+ggplot(analysis_df, aes(air_temp_avg, ice_duration_avg)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = TRUE) +
+  labs(x = "Average air temperature (°C)",
+       y = "Average ice duration (days)",
+       title = "Ice duration vs. air temperature")
+```
+
+The relationship look roughly linear and negative, since the spread of points around the slope line look fairly balanced, without strong curvature or other pattern. \
+\
+
+## Exercise 8
+
+1.  y : 134 x 2
+
+2.  X: 134 x 2
+
+3.  B: 2 x 1
+
+4.  e: 134 x 1
+
+```{r}
+#b
+y <- as.matrix(analysis_df$ice_duration_avg)
+X <- cbind(Intercept = 1, Temp = analysis_df$air_temp_avg) |> as.matrix()
+beta_hat <- solve(t(X) %*% X) %*% t(X) %*% y
+beta_hat
 
 ```
 
-\
-\
+```{r}
+#c 
+fit <- lm(ice_duration_avg ~ air_temp_avg, data = analysis_df)
+round(coef(fit), 3)
+summary(fit)
+
+```
 
 ## Exercise 9
 
-## 
+```{r}
+#a
+r2 <- summary(fit)$r.squared
+r2
+```
+
+This means that only 11.6417% of the variation in the ice_duration is explained by the average air temperature.
+
+```{r}
+#b 
+rmse <- sqrt(mean(residuals(fit)^2))
+rmse
+```
+
+The RMSE is about 18 days, meaning that on average our predictions for ice duration are off by nearly three weeks. From the the ice_duration vs. air_temp plot, we could see that typical ice durations range from 80 to 140 days, so the prediction error is fairly large in context, suggesting that while air temperature is related to ice duration, it is not the only factor.
+
+c\. Since the R\^2 is low, and the RMSE is relatively high, we can say that the model fit is not great (model's predictions are imprecise).
 
 ## Exercise 10
+
+a\. The slope of -6.182 indicates that, on average, for every one degree celsius increase in average air temperate, the average_ice_duration for the 2 lakes decreases by 6.182 days. \
+
+```{r}
+tail(ice_duration_avg)
+```
+
+b\. Using our regression formula, we have that \
+Y-hat = 148.110 - 6.182 \* ( 7.925) = 99.1177
+
+So, the predicted ice duration was approximately 99 days. \
+\
+The residual is calculated as (e = Y - Y-hat). This means e = (
 
 ##   
